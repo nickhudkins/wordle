@@ -1,0 +1,15 @@
+{
+  "name": "@nickhudkins/wordle",
+  "version": "1.0.0",
+  "description": "It's wordle!?",
+  "workspaces": [
+    "packages/**"
+  ],
+  "scripts": {
+    "start:server": "npm run start:dev -w @nickhudkins/wordle-server",
+    "start:ui": "npm run start -w @nickhudkins/wordle-ui",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

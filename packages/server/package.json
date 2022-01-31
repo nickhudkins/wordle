@@ -1,0 +1,19 @@
+{
+  "name": "@nickhudkins/wordle-server",
+  "version": "1.0.0",
+  "description": "What if there was a server for wordle",
+  "scripts": {
+    "start:dev": "concurrently -k -n COMPILER,NODEMON -c gray,blue \"tsc -w\" \"nodemon -w dist dist/index.js\"",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^17.0.13",
+    "concurrently": "^7.0.0",
+    "nodemon": "^2.0.15",
+    "typescript": "^4.5.5"
+  }
+}
