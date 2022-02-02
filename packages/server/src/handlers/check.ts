@@ -1,24 +1,21 @@
-import type { ServerResponse } from "http";
-import { ROW_LENGTH, DEFAULT_HEADERS, CORRECT_WORD } from "../config";
+import { ROW_LENGTH, CORRECT_WORD, BANNED_WORD } from "../config";
+import WORD_LIST from "./word-list.json";
 
 function wordIsValid(word: string) {
-  const normalized = word.toUpperCase();
-  if (normalized === "WRONG") {
+  const normalized = word.toLowerCase();
+  if (normalized === BANNED_WORD) {
     return false;
   }
-  return true;
+  return WORD_LIST.includes(word);
 }
 
 interface CheckHandlerArgs {
   maybeWord: string;
 }
 
-export function handleCheckWord(
-  res: ServerResponse,
-  { maybeWord }: CheckHandlerArgs
-) {
+export function handleCheckWord({ maybeWord }: CheckHandlerArgs) {
   if (!wordIsValid(maybeWord)) {
-    return res.writeHead(400).end();
+    throw new Error("INVALID_WORD");
   }
   const letters = maybeWord.toUpperCase().slice(0, ROW_LENGTH).split("");
   const letterState = letters.map((l, i) => {
@@ -32,8 +29,8 @@ export function handleCheckWord(
     }
     return 0;
   });
-  const body = JSON.stringify({
+
+  return {
     letterState,
-  });
-  return res.writeHead(200, DEFAULT_HEADERS).end(body);
+  };
 }

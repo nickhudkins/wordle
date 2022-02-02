@@ -13,7 +13,8 @@ export type ActionType = {
     | "META/COMPLETE"
     | "CONFIRM_ROW/START"
     | "CONFIRM_ROW/REJECT"
-    | "CONFIRM_ROW/COMPLETE";
+    | "CONFIRM_ROW/COMPLETE"
+    | "INTERACTION/OCCURRED";
   payload: any;
 };
 
@@ -22,6 +23,8 @@ export type GameDispatch = Dispatch<ActionType>;
 export type ReducerState = {
   appReady: boolean;
   loading: boolean;
+  hasInteracted: boolean;
+  usedLetters: Record<string, number>;
   error: boolean;
   confirmedRows: ConfirmedRow[];
   placeholderRows: string[][];

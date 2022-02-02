@@ -1,6 +1,6 @@
 import confetti from "canvas-confetti";
 
-interface FireOpts {
+interface ConfettiOpts {
   origin?: {
     x?: number;
     y?: number;
@@ -12,12 +12,12 @@ interface FireOpts {
   scalar?: number;
 }
 
-interface Fire {
-  (particleRatio: number, opts: FireOpts): void;
+interface Confetti {
+  (particleRatio: number, opts: ConfettiOpts): void;
 }
 
-export function createConfetti(defaults: FireOpts): Fire {
-  return function fire(particleRatio: number, opts: FireOpts) {
+export function createConfetti(defaults: ConfettiOpts): Confetti {
+  return function fire(particleRatio: number, opts: ConfettiOpts) {
     confetti(
       Object.assign({}, defaults, opts, {
         particleCount: Math.floor(opts.count * particleRatio),
@@ -26,30 +26,30 @@ export function createConfetti(defaults: FireOpts): Fire {
   };
 }
 
-export function fireAway(fire: Fire, count: number) {
-  fire(0.25, {
+export function realisticConfetti(doConfetti: Confetti, count: number) {
+  doConfetti(0.25, {
     spread: 26,
     count,
     startVelocity: 55,
   });
-  fire(0.2, {
+  doConfetti(0.2, {
     count,
     spread: 60,
   });
-  fire(0.35, {
+  doConfetti(0.35, {
     count,
     spread: 100,
     decay: 0.91,
     scalar: 0.8,
   });
-  fire(0.1, {
+  doConfetti(0.1, {
     count,
     spread: 120,
     startVelocity: 25,
     decay: 0.92,
     scalar: 1.2,
   });
-  fire(0.1, {
+  doConfetti(0.1, {
     count,
     spread: 120,
     startVelocity: 45,

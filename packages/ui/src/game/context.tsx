@@ -1,6 +1,9 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import * as React from "react";
 import { createContext, useReducer, useEffect } from "react";
 import type {
+  ConfirmedRow,
   ReducerState,
   GameOutcome,
   GameContext,
@@ -10,9 +13,11 @@ import type {
 const INITIAL_STATE: ReducerState = {
   appReady: false,
   confirmedRows: [],
+  usedLetters: {},
   error: false,
   placeholderRows: [],
   loading: true,
+  hasInteracted: false,
 };
 
 const getGameOutcome = (
@@ -30,10 +35,28 @@ const getGameOutcome = (
   return;
 };
 
+const emptyKeyboardUsage: Record<string, number> = {};
+
+const getKeyUsage = (confirmedRows: ConfirmedRow[]): Record<string, number> =>
+  confirmedRows.flat().reduce(
+    (usage, { value: letter, letterState }) => ({
+      ...usage,
+      [letter]: Math.max(usage[letter] || -Infinity, letterState),
+    }),
+    emptyKeyboardUsage
+  );
+
 function reducer(state: ReducerState, action: ActionType) {
   const { type, payload } = action;
-  const { placeholderRows, numRows } = state;
   switch (type) {
+    case "INTERACTION/OCCURRED": {
+      return state.hasInteracted
+        ? state
+        : {
+            ...state,
+            hasInteracted: true,
+          };
+    }
     case "CONFIRM_ROW/START":
       return {
         ...state,
@@ -47,12 +70,19 @@ function reducer(state: ReducerState, action: ActionType) {
       };
     }
     case "CONFIRM_ROW/COMPLETE":
-      const confirmedRows = [...state.confirmedRows, action.payload];
+      const confirmedRows: ConfirmedRow[] = [
+        ...state.confirmedRows,
+        action.payload,
+      ];
       const gameOutcome = getGameOutcome(confirmedRows);
+
+      // Ensures that when "<CurrentRow />" disappears,
+      // we accurately pad the board
       const currentRowOffset = gameOutcome ? 0 : -1;
       const attemptsRemaining =
-        numRows - confirmedRows.length + currentRowOffset;
-      const newPlaceholderRows = placeholderRows.slice(
+        state.numRows - confirmedRows.length + currentRowOffset;
+
+      const newPlaceholderRows = state.placeholderRows.slice(
         0,
         Math.max(attemptsRemaining, 0)
       );
@@ -61,20 +91,22 @@ function reducer(state: ReducerState, action: ActionType) {
         confirmedRows,
         error: false,
         loading: false,
+        usedLetters: getKeyUsage(confirmedRows),
         placeholderRows: newPlaceholderRows,
         gameOutcome: gameOutcome,
       };
     case "META/COMPLETE":
-      const { numRows: metaNumRows, rowLength } = payload;
+      const { numRows, rowLength } = payload;
+      const placeholderRows = new Array(numRows - 1).fill(
+        new Array(rowLength).fill("")
+      );
       return {
         ...state,
         appReady: true,
-        numRows: metaNumRows,
-        rowLength,
-        placeholderRows: new Array(metaNumRows - 1).fill(
-          new Array(rowLength).fill("")
-        ),
         loading: false,
+        numRows,
+        rowLength,
+        placeholderRows,
       };
     case "META/REJECT":
       return {
@@ -91,20 +123,19 @@ const INITIAL_CONTEXT: GameContext = {
   state: INITIAL_STATE,
   dispatch: () => {},
 };
-
 export const Context = createContext(INITIAL_CONTEXT);
-
 export const GameContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   useEffect(() => {
-    fetch("/api/meta")
+    fetch(`${API_URL}/meta`)
       .then((resp) => resp.json())
       .then((payload) => {
         dispatch({
           type: "META/COMPLETE",
           payload,
         });
-      });
+      })
+      .catch((e) => dispatch({ type: "META/REJECT", payload: e }));
   }, []);
   return (
     <Context.Provider value={{ state, dispatch }}>{children}</Context.Provider>

@@ -1,10 +1,8 @@
-import type { ServerResponse } from "http";
-import { ROW_COUNT, ROW_LENGTH, DEFAULT_HEADERS } from "../config";
+import { ROW_COUNT, ROW_LENGTH } from "../config";
 
-export function handleMeta(res: ServerResponse) {
-  const body = JSON.stringify({
+export function handleMeta() {
+  return {
     numRows: ROW_COUNT,
     rowLength: ROW_LENGTH,
-  });
-  return res.writeHead(200, DEFAULT_HEADERS).end(body);
+  };
 }

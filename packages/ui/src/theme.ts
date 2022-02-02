@@ -12,4 +12,4 @@ export const CONFIRMED_BG = "#32322C";
 
 export const BOARD_BG = "white";
 
-export const LETTER_HEIGHT = 72;
+export const LETTER_HEIGHT = 60;

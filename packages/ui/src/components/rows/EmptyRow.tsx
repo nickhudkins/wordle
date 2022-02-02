@@ -2,11 +2,11 @@ import * as React from "react";
 import { Letter } from "../Letter";
 import { Row } from "./Row";
 
-export function EmptyRow({ row }) {
+export function EmptyRow({ row, index }) {
   return (
     <Row>
-      {row.map((_: any, i: number) => (
-        <Letter value={""} key={`empty-letter-${i}`} />
+      {row.map((_: string, i: number) => (
+        <Letter row={index} index={i} value={""} key={`empty-letter-${i}`} />
       ))}
     </Row>
   );

@@ -1,17 +1,43 @@
-import http from "http";
-import { handleCheckWord, handleMeta } from "./handlers";
+import type {
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResultV2,
+} from "aws-lambda";
 
-const server = http.createServer(({ url }, res) => {
-  const [, path, maybeWord] = (url && url.split("/")) || [];
-  if (path === "meta") {
-    return handleMeta(res);
-  }
-  if (path === "check" && !!maybeWord) {
-    return handleCheckWord(res, { maybeWord });
-  }
-  return res.writeHead(404).end();
-});
+import { handleMeta, handleCheckWord } from "./handlers";
 
-server.listen(8080, () => {
-  console.log("🚀");
-});
+const defaultHeaders = {
+  "Content-Type": "application/json",
+};
+
+export const handler = async (
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2> => {
+  try {
+    switch (event.routeKey) {
+      case "GET /meta":
+        return {
+          headers: defaultHeaders,
+          statusCode: 200,
+          body: JSON.stringify(handleMeta()),
+        };
+      case "GET /check/{word}":
+        const { pathParameters } = event;
+        // We know we'll have it
+        const maybeWord = pathParameters!["word"]!;
+        return {
+          headers: defaultHeaders,
+          statusCode: 200,
+          body: JSON.stringify(handleCheckWord({ maybeWord })),
+        };
+    }
+    return { statusCode: 400, headers: defaultHeaders };
+  } catch (e) {
+    const { message } = e as Error;
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        error: message,
+      }),
+    };
+  }
+};

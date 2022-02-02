@@ -1,3 +1,4 @@
+const API_URL = import.meta.env.VITE_API_URL;
 import * as React from "react";
 import { useContext, useCallback } from "react";
 
@@ -21,10 +22,10 @@ function createUseOnConfirm(dispatch: GameDispatch, gameOutcome: GameOutcomeT) {
         type: "CONFIRM_ROW/START",
         payload: null,
       });
-      const resp = await fetch(`/api/check/${row.join("")}`);
+      const resp = await fetch(`${API_URL}/check/${row.join("")}`);
       if (resp.status === 400) throw new Error("INVALID_WORD");
       const { letterState } = await resp.json();
-      dispatch({
+      return dispatch({
         type: "CONFIRM_ROW/COMPLETE",
         payload: row.map((l, i) => ({
           value: l,
@@ -32,6 +33,7 @@ function createUseOnConfirm(dispatch: GameDispatch, gameOutcome: GameOutcomeT) {
         })),
       });
     }
+    throw new Error("INCOMPLETE_WORD");
   };
 }
 
@@ -42,31 +44,51 @@ function lastConfirmed(confirmedRows: ConfirmedRowT[]): ConfirmedRowT {
 
 export function Board() {
   const {
-    state: { appReady, confirmedRows, gameOutcome, placeholderRows },
+    state: {
+      appReady,
+      hasInteracted,
+      confirmedRows,
+      gameOutcome,
+      placeholderRows,
+    },
     dispatch,
   } = useContext(Context);
-
   const _onConfirm = createUseOnConfirm(dispatch, gameOutcome);
   const onConfirm = useCallback(_onConfirm, [dispatch, gameOutcome]);
-
+  const onInteraction = useCallback(
+    () => dispatch({ type: "INTERACTION/OCCURRED", payload: null }),
+    []
+  );
   if (!appReady) {
     return null;
   }
   return (
     <>
-      <GameOutcome gameOutcome={gameOutcome} />
+      <GameOutcome gameOutcome={gameOutcome} confirmedRows={confirmedRows} />
       {confirmedRows.map((row, i) => (
-        <ConfirmedRow key={`confirmed-${i}`} row={row} />
+        <ConfirmedRow
+          hasInteracted={hasInteracted}
+          key={`confirmed-${i}`}
+          row={row}
+        />
       ))}
       {!gameOutcome && (
         <CurrentRow
+          hasInteracted={hasInteracted}
+          index={confirmedRows.length + 1}
           previousRow={lastConfirmed(confirmedRows)}
           initialRow={placeholderRows[0]}
           onConfirm={onConfirm}
+          onInteraction={onInteraction}
         />
       )}
       {placeholderRows.map((row, i) => (
-        <EmptyRow key={`empty-${i}`} row={row} />
+        <EmptyRow
+          hasInteracted={hasInteracted}
+          key={`empty-${i}`}
+          row={row}
+          index={i}
+        />
       ))}
     </>
   );

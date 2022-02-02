@@ -8,27 +8,39 @@ import { Row } from "../Row";
 import { useKeyboardInput } from "./use-keyboard-input";
 
 interface CurrentRowProps {
+  index: number;
+  hasInteracted: boolean;
   initialRow: string[];
   previousRow: ConfirmedRow;
+  onInteraction: () => void;
   onConfirm: (letters: string[]) => Promise<void>;
 }
 
 export function CurrentRow({
   initialRow,
   onConfirm,
+  index,
+  hasInteracted,
   previousRow,
+  onInteraction,
 }: CurrentRowProps) {
   const { current: initialState } = useRef(initialRow);
   const [letters, setLetters] = useState(initialState);
   const [failed, setFailed] = useState(false);
+  const _setLetters = (args) => {
+    onInteraction();
+    setLetters(args);
+  };
   useKeyboardInput({
-    setLetters,
+    setLetters: _setLetters,
     onEnter: () => {
       // Clear Failure State
       setFailed(false);
       // If confirmation throws...
       //... set failed to shake the row!
-      onConfirm(letters).catch(() => setFailed(true));
+      onConfirm(letters).catch(() =>
+        requestAnimationFrame(() => setFailed(true))
+      );
     },
   });
   // We clear once our confirmedRows
@@ -39,7 +51,13 @@ export function CurrentRow({
   return (
     <Row failed={failed}>
       {letters.map((letter, i) => (
-        <Letter value={letter} key={`current-row-letter-${i}`} />
+        <Letter
+          hasInteracted={hasInteracted}
+          row={index}
+          index={i}
+          value={letter}
+          key={`current-row-letter-${i}`}
+        />
       ))}
     </Row>
   );

@@ -6,10 +6,24 @@
     "packages/**"
   ],
   "scripts": {
-    "start:server": "npm run start:dev -w @nickhudkins/wordle-server",
+    "build": "run-p -l build:*",
+    "build:ui": "npm run build -w @nickhudkins/wordle-ui",
+    "build:server": "npm run build -w @nickhudkins/wordle-server",
+    "start": "run-p -l start:*",
+    "start:server": "npm run start -w @nickhudkins/wordle-server",
     "start:ui": "npm run start -w @nickhudkins/wordle-ui",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "run-p -l dev:*",
+    "dev:server": "npm run start:dev -w @nickhudkins/wordle-server",
+    "dev:ui": "npm run start:dev -w @nickhudkins/wordle-ui",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update-word": "scripts/update-word.sh"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "dependencies": {
+    "pluralize": "^8.0.0"
+  }
 }
