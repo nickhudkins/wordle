@@ -38,6 +38,9 @@ const useTitleStyles = createUseStyles({
     transform: "scale(1) rotate(-15deg)",
     opacity: 1,
   },
+  strike: {
+    textDecoration: "line-through",
+  },
 });
 
 export const Title = () => {
@@ -51,10 +54,14 @@ export const Title = () => {
     cite: true,
     citeShow: animateIn,
   });
+  const strikeClass = cx({
+    strike: true,
+  });
 
   return (
     <h1 className={titleClass}>
-      Wordle <cite className={citeClass}>by Nick</cite>
+      <span className={strikeClass}>W</span>Nordle{" "}
+      <cite className={citeClass}>by Nick</cite>
     </h1>
   );
 };

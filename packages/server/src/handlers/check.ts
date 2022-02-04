@@ -1,12 +1,15 @@
 import { ROW_LENGTH, CORRECT_WORD, BANNED_WORD } from "../config";
 import WORD_LIST from "./word-list.json";
+import EXTRA_WORDS from "./additional-words.json";
+
+const FULL_WORD_LIST = [...WORD_LIST, ...EXTRA_WORDS];
 
 function wordIsValid(word: string) {
   const normalized = word.toLowerCase();
   if (normalized === BANNED_WORD) {
     return false;
   }
-  return WORD_LIST.includes(word);
+  return FULL_WORD_LIST.includes(word);
 }
 
 interface CheckHandlerArgs {
