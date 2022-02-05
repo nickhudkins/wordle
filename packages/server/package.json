@@ -4,6 +4,7 @@
   "description": "What if there was a server for wordle",
   "scripts": {
     "build": "tsc",
+    "test:watch": "jest --coverage --watch",
     "test": "jest --coverage"
   },
   "author": "",

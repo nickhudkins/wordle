@@ -4,6 +4,9 @@ import EXTRA_WORDS from "./additional-words.json";
 import { normalizeInput } from "../utils";
 const FULL_WORD_LIST = [...WORD_LIST, ...EXTRA_WORDS].map(normalizeInput);
 
+export type CheckResp = {
+  letterState: number[];
+};
 interface CheckHandlerArgs {
   maybeWord: string;
 }
@@ -42,7 +45,7 @@ export function createCheckHandler(config: CheckConfig) {
     // musn't contain the CORRECT_WORD, for funsies.
     return [...FULL_WORD_LIST, CORRECT_WORD].includes(word);
   }
-  return function handleCheckWord({ maybeWord }: CheckHandlerArgs) {
+  return function handleCheckWord({ maybeWord }: CheckHandlerArgs): CheckResp {
     const inputWord = normalizeInput(maybeWord);
     if (!wordIsValid(inputWord)) {
       throw new ValidationError("INVALID_WORD");

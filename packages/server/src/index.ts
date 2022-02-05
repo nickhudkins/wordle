@@ -1,10 +1,10 @@
 import type {
   APIGatewayProxyEventV2,
-  APIGatewayProxyResultV2,
+  APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 
 import { configFromEnv } from "./config";
-import { createCheckHandler } from "./handlers";
+import { createCheckHandler, createMetaHandler } from "./handlers";
 
 const defaultHeaders = {
   "Content-Type": "application/json",
@@ -12,20 +12,23 @@ const defaultHeaders = {
 
 const config = configFromEnv();
 const checkWordHandler = createCheckHandler(config);
+const metaHandler = createMetaHandler(config);
+
+type UsedEventProps = Pick<
+  APIGatewayProxyEventV2,
+  "routeKey" | "pathParameters"
+>;
 
 export const handler = async (
-  event: APIGatewayProxyEventV2
-): Promise<APIGatewayProxyResultV2> => {
+  event: UsedEventProps
+): Promise<APIGatewayProxyStructuredResultV2> => {
   try {
     switch (event.routeKey) {
       case "GET /meta":
         return {
           headers: defaultHeaders,
           statusCode: 200,
-          body: JSON.stringify({
-            numRows: config.ROW_COUNT,
-            rowLength: config.ROW_LENGTH,
-          }),
+          body: JSON.stringify(metaHandler()),
         };
       case "GET /check/{word}":
         const { pathParameters } = event;

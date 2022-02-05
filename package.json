@@ -15,7 +15,8 @@
     "start:ui": "npm run start -w @nickhudkins/wordle-ui",
     "dev": "run-p -l dev:*",
     "dev:ui": "npm run start:dev -w @nickhudkins/wordle-ui",
-    "test:server": "npm run test -w @nickhudkins/wordle-server"
+    "test:server": "npm run test -w @nickhudkins/wordle-server",
+    "test:server:watch": "npm run test:watch -w @nickhudkins/wordle-server"
   },
   "author": "",
   "license": "ISC",
