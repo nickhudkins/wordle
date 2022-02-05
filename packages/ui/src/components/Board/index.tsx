@@ -83,12 +83,7 @@ export function Board() {
         />
       )}
       {placeholderRows.map((row, i) => (
-        <EmptyRow
-          hasInteracted={hasInteracted}
-          key={`empty-${i}`}
-          row={row}
-          index={i}
-        />
+        <EmptyRow key={`empty-${i}`} row={row} index={i} />
       ))}
     </>
   );

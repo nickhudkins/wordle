@@ -7,7 +7,7 @@ interface ConfirmedRowProps {
   row: ConfirmedRowT;
   hasInteracted: boolean;
 }
-export function ConfirmedRow({ row, hasInteracted }: ConfirmedRowT) {
+export function ConfirmedRow({ row, hasInteracted }: ConfirmedRowProps) {
   return (
     <Row>
       {row.map(({ value, letterState }, i: number) => {
