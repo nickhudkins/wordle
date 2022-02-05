@@ -3,11 +3,15 @@ import type {
   APIGatewayProxyResultV2,
 } from "aws-lambda";
 
-import { handleMeta, handleCheckWord } from "./handlers";
+import { configFromEnv } from "./config";
+import { createCheckHandler } from "./handlers";
 
 const defaultHeaders = {
   "Content-Type": "application/json",
 };
+
+const config = configFromEnv();
+const checkWordHandler = createCheckHandler(config);
 
 export const handler = async (
   event: APIGatewayProxyEventV2
@@ -18,7 +22,10 @@ export const handler = async (
         return {
           headers: defaultHeaders,
           statusCode: 200,
-          body: JSON.stringify(handleMeta()),
+          body: JSON.stringify({
+            numRows: config.ROW_COUNT,
+            rowLength: config.ROW_LENGTH,
+          }),
         };
       case "GET /check/{word}":
         const { pathParameters } = event;
@@ -27,7 +34,7 @@ export const handler = async (
         return {
           headers: defaultHeaders,
           statusCode: 200,
-          body: JSON.stringify(handleCheckWord({ maybeWord })),
+          body: JSON.stringify(checkWordHandler({ maybeWord })),
         };
     }
     return { statusCode: 400, headers: defaultHeaders };

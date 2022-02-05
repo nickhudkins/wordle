@@ -10,8 +10,10 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
-      - name: Build & Zip
-        run: npm install && npm run release:server
+      - name: Install & Test
+        run: npm install && npm run test -w @nickhudkins/wordle-server
+      - name: Bundle & Release
+        run: npm run release:server
       - name: Configure AWS Credentials  
         uses: aws-actions/configure-aws-credentials@v1
         with:

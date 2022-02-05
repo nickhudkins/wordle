@@ -12,13 +12,10 @@
     "package:server": "cd packages/server/dist && zip -r out.zip .",
     "release:server": "npm run build:server && npm run package:server",
     "start": "run-p -l start:*",
-    "start:server": "npm run start -w @nickhudkins/wordle-server",
     "start:ui": "npm run start -w @nickhudkins/wordle-ui",
     "dev": "run-p -l dev:*",
-    "dev:server": "npm run start:dev -w @nickhudkins/wordle-server",
     "dev:ui": "npm run start:dev -w @nickhudkins/wordle-ui",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "update-word": "scripts/update-word.sh"
+    "test:server": "npm run test -w @nickhudkins/wordle-server"
   },
   "author": "",
   "license": "ISC",
