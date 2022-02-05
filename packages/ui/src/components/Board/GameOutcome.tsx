@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect, useRef } from "react";
 import { createUseStyles } from "react-jss";
 import { Dialog } from "@reach/dialog";
 import {
@@ -29,6 +30,17 @@ const useStyles = createUseStyles({
 
 export function GameOutcome({ gameOutcome, confirmedRows }) {
   const cx = useStyles();
+  const [shared, setShared] = useState(false);
+  const timeout = useRef(null);
+  useEffect(() => {
+    if (shared) {
+      clearTimeout(timeout.current);
+      timeout.current = setTimeout(() => {
+        setShared(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timeout.current);
+  }, [shared, setShared]);
   function handleClick(e) {
     e.preventDefault();
     const rows = confirmedRows
@@ -51,6 +63,7 @@ export function GameOutcome({ gameOutcome, confirmedRows }) {
       confirmedRows.length
     }/6\n\n${rows}`;
     navigator.clipboard.writeText(shareText);
+    setShared(true);
   }
   switch (gameOutcome) {
     case "WINNER":
@@ -59,7 +72,7 @@ export function GameOutcome({ gameOutcome, confirmedRows }) {
           <h1>You Won</h1>
           <p>You should be very proud of yourself.</p>
           <button className={cx.button} onClick={handleClick}>
-            🎉 Share It!
+            {shared ? "✅ Copied!" : "🎉 Share It!"}
           </button>
         </Dialog>
       );
