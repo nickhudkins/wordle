@@ -28,7 +28,7 @@ const useStyles = createUseStyles({
   },
 });
 
-const rows = ["qwertyuiop", "asdfghjkl", "zxcvbnm<>"];
+const rows = ["qwertyuiop", "asdfghjkl", ">zxcvbnm<"];
 
 export function Keyboard() {
   const {
