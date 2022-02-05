@@ -2,10 +2,12 @@ import { ROW_LENGTH, CORRECT_WORD, BANNED_WORD } from "../config";
 import WORD_LIST from "./word-list.json";
 import EXTRA_WORDS from "./additional-words.json";
 
-const FULL_WORD_LIST = [...WORD_LIST, ...EXTRA_WORDS];
+const normalizeInput = (str: string) => str.trim().toLowerCase();
+const FULL_WORD_LIST = [...WORD_LIST, ...EXTRA_WORDS].map(normalizeInput);
+const NORMALIZED_CORRECT_WORD = normalizeInput(CORRECT_WORD);
 
 function wordIsValid(word: string) {
-  const normalized = word.toLowerCase();
+  const normalized = normalizeInput(word);
   if (normalized === BANNED_WORD) {
     return false;
   }
@@ -17,14 +19,15 @@ interface CheckHandlerArgs {
 }
 
 export function handleCheckWord({ maybeWord }: CheckHandlerArgs) {
-  if (!wordIsValid(maybeWord)) {
+  const inputWord = normalizeInput(maybeWord);
+  if (!wordIsValid(inputWord)) {
     throw new Error("INVALID_WORD");
   }
-  const letters = maybeWord.toUpperCase().slice(0, ROW_LENGTH).split("");
+  const letters = inputWord.slice(0, ROW_LENGTH).split("");
   const letterState = letters.map((l, i) => {
-    const index = CORRECT_WORD.indexOf(l);
+    const index = NORMALIZED_CORRECT_WORD.indexOf(l);
     const exists = index >= 0;
-    const correctLocation = exists ? CORRECT_WORD[i] === l : false;
+    const correctLocation = exists ? NORMALIZED_CORRECT_WORD[i] === l : false;
     if (exists && correctLocation) {
       return 2;
     } else if (exists) {
