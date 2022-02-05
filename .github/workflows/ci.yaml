@@ -1,0 +1,49 @@
+name: Deploy
+on: 
+  push:
+    branches:
+      - main
+jobs:
+  DeployServer:
+    name: Deploy Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Build & Zip
+        run: npm install && npm run release:server
+      - name: Configure AWS Credentials  
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Update Lambda
+        run: |
+          aws lambda update-function-code \
+          --function-name=wordle-api \
+          --zip-file=fileb://packages/server/dist/out.zip 
+  DeployUI:
+    name: Deploy UI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Build & Zip
+        run: npm install && npm run build:ui
+      - name: Configure AWS Credentials  
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Upload Assets
+        run: |
+          aws s3 sync \
+          ./packages/ui/dist \
+          s3://wordle.nickhudkins.com
+      - name: Invalidate Cache
+        run: |
+          aws cloudfront create-invalidation \
+          --distribution-id E1OV5GB7F9NK3F \
+          --paths "/*"

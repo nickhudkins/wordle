@@ -9,6 +9,8 @@
     "build": "run-p -l build:*",
     "build:ui": "npm run build -w @nickhudkins/wordle-ui",
     "build:server": "npm run build -w @nickhudkins/wordle-server",
+    "package:server": "cd packages/server/dist && zip -r out.zip .",
+    "release:server": "npm run build:server && npm run package:server",
     "start": "run-p -l start:*",
     "start:server": "npm run start -w @nickhudkins/wordle-server",
     "start:ui": "npm run start -w @nickhudkins/wordle-ui",
