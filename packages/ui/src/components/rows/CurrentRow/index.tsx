@@ -8,6 +8,7 @@ import { Row } from "../Row";
 import { useKeyboardInput } from "./use-keyboard-input";
 
 interface CurrentRowProps {
+  loading: boolean;
   index: number;
   hasInteracted: boolean;
   initialRow: string[];
@@ -17,6 +18,7 @@ interface CurrentRowProps {
 }
 
 export function CurrentRow({
+  loading,
   initialRow,
   onConfirm,
   index,
@@ -34,6 +36,9 @@ export function CurrentRow({
   useKeyboardInput({
     setLetters: _setLetters,
     onEnter: () => {
+      // Let's bail early if we know
+      // we're waiting on the server
+      if (loading) return;
       // Clear Failure State
       setFailed(false);
       // If confirmation throws...

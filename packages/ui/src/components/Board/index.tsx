@@ -50,6 +50,7 @@ export function Board() {
       confirmedRows,
       gameOutcome,
       placeholderRows,
+      loading,
     },
     dispatch,
   } = useContext(Context);
@@ -74,6 +75,7 @@ export function Board() {
       ))}
       {!gameOutcome && (
         <CurrentRow
+          loading={loading}
           hasInteracted={hasInteracted}
           index={confirmedRows.length + 1}
           previousRow={lastConfirmed(confirmedRows)}
