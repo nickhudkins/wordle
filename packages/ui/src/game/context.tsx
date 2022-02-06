@@ -14,9 +14,9 @@ const INITIAL_STATE: ReducerState = {
   appReady: false,
   confirmedRows: [],
   usedLetters: {},
-  error: false,
   placeholderRows: [],
   loading: true,
+  revision: 1,
   hasInteracted: false,
 };
 
@@ -65,7 +65,7 @@ function reducer(state: ReducerState, action: ActionType) {
     case "CONFIRM_ROW/REJECT": {
       return {
         ...state,
-        error: true,
+        error: payload.reason,
         loading: false,
       };
     }
@@ -89,19 +89,20 @@ function reducer(state: ReducerState, action: ActionType) {
       return {
         ...state,
         confirmedRows,
-        error: false,
+        error: undefined,
         loading: false,
         usedLetters: getKeyUsage(confirmedRows),
         placeholderRows: newPlaceholderRows,
         gameOutcome: gameOutcome,
       };
     case "META/COMPLETE":
-      const { numRows, rowLength } = payload;
+      const { numRows, rowLength, revision } = payload;
       const placeholderRows = new Array(numRows - 1).fill(
         new Array(rowLength).fill("")
       );
       return {
         ...state,
+        revision,
         appReady: true,
         loading: false,
         numRows,
@@ -111,7 +112,8 @@ function reducer(state: ReducerState, action: ActionType) {
     case "META/REJECT":
       return {
         ...state,
-        error: true,
+        loading: false,
+        error: payload.reason,
       };
     default:
       break;
@@ -122,6 +124,7 @@ function reducer(state: ReducerState, action: ActionType) {
 const INITIAL_CONTEXT: GameContext = {
   state: INITIAL_STATE,
   dispatch: () => {},
+  fetch: fetch,
 };
 export const Context = createContext(INITIAL_CONTEXT);
 export const GameContextProvider = ({ children }) => {
@@ -135,9 +138,19 @@ export const GameContextProvider = ({ children }) => {
           payload,
         });
       })
-      .catch((e) => dispatch({ type: "META/REJECT", payload: e }));
+      .catch((e) => dispatch({ type: "META/REJECT", payload: { reason: e } }));
   }, []);
+  const _fetch = (info: RequestInfo, opts: RequestInit) =>
+    fetch(info, {
+      ...opts,
+      mode: "cors",
+      headers: {
+        "x-nordle-revision": `${state.revision}`,
+      },
+    });
   return (
-    <Context.Provider value={{ state, dispatch }}>{children}</Context.Provider>
+    <Context.Provider value={{ state, dispatch, fetch: _fetch }}>
+      {children}
+    </Context.Provider>
   );
 };

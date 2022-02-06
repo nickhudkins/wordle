@@ -25,15 +25,17 @@ export type ReducerState = {
   loading: boolean;
   hasInteracted: boolean;
   usedLetters: Record<string, number>;
-  error: boolean;
+  error?: Error;
   confirmedRows: ConfirmedRow[];
   placeholderRows: string[][];
   numRows?: number;
   rowLength?: number;
   gameOutcome?: GameOutcome;
+  revision: number;
 };
 
 export type GameContext = {
   state: ReducerState;
+  fetch: typeof fetch;
   dispatch: React.Dispatch<ActionType>;
 };

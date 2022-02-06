@@ -1,0 +1,27 @@
+import type { Config } from "../types";
+
+export type CheckWordConfig = Pick<
+  Config,
+  "bannedWord" | "correctWord" | "rowLength"
+>;
+
+export interface CheckWordInput {
+  revision: number;
+  maybeWord: string;
+}
+
+type FOUND = 2;
+type EXISTS = 1;
+type NOT_FOUND = 0;
+
+export type CheckWordResponse = {
+  letterState: (FOUND | EXISTS | NOT_FOUND)[];
+};
+
+export type MetaConfig = Pick<Config, "rowLength" | "numRows" | "revision">;
+
+export type MetaResponse = {
+  numRows: number;
+  rowLength: number;
+  revision: number;
+};

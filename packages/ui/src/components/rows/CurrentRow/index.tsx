@@ -43,9 +43,9 @@ export function CurrentRow({
       setFailed(false);
       // If confirmation throws...
       //... set failed to shake the row!
-      onConfirm(letters).catch(() =>
-        requestAnimationFrame(() => setFailed(true))
-      );
+      onConfirm(letters).catch(() => {
+        requestAnimationFrame(() => setFailed(true));
+      });
     },
   });
   // We clear once our confirmedRows

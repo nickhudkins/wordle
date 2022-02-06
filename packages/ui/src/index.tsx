@@ -4,6 +4,7 @@ import { createUseStyles } from "react-jss";
 
 import { Board } from "./components/Board";
 import { Keyboard } from "./components/Keyboard";
+import { GameAlerts } from "./components/GameAlerts";
 import { GameContextProvider } from "./game/context";
 import { useGlobalStyles } from "./global-styles";
 import { Title } from "./components/Title";
@@ -36,6 +37,7 @@ function App() {
   return (
     <GameContextProvider>
       <div className={cx.outerContainer}>
+        <GameAlerts />
         <div className={cx.container}>
           <Title />
           <div className={cx.gameboard}>

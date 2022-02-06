@@ -1,53 +1,40 @@
 import type {
-  APIGatewayProxyEventV2,
+  APIGatewayEventProps,
   APIGatewayProxyStructuredResultV2,
-} from "aws-lambda";
-
-import { configFromEnv } from "./config";
+} from "./types";
+import { ok, errorResponse, notFound } from "./http";
 import { createCheckHandler, createMetaHandler } from "./handlers";
 
-const defaultHeaders = {
-  "Content-Type": "application/json",
-};
-
-const config = configFromEnv();
-const checkWordHandler = createCheckHandler(config);
-const metaHandler = createMetaHandler(config);
-
-type UsedEventProps = Pick<
-  APIGatewayProxyEventV2,
-  "routeKey" | "pathParameters"
->;
+let checkWordHandler: ReturnType<typeof createCheckHandler>;
+let metaHandler: ReturnType<typeof createMetaHandler>;
 
 export const handler = async (
-  event: UsedEventProps
+  event: APIGatewayEventProps
 ): Promise<APIGatewayProxyStructuredResultV2> => {
   try {
     switch (event.routeKey) {
       case "GET /meta":
-        return {
-          headers: defaultHeaders,
-          statusCode: 200,
-          body: JSON.stringify(metaHandler()),
-        };
+        if (!metaHandler) {
+          metaHandler = createMetaHandler(() => process.env);
+        }
+        const metaResp = metaHandler();
+        return ok(metaResp);
       case "GET /check/{word}":
-        const { pathParameters } = event;
-        // We know we'll have it
-        const maybeWord = pathParameters!["word"]!;
-        return {
-          headers: defaultHeaders,
-          statusCode: 200,
-          body: JSON.stringify(checkWordHandler({ maybeWord })),
-        };
+        if (!checkWordHandler) {
+          checkWordHandler = createCheckHandler(() => process.env);
+        }
+        const maybeWord = event?.pathParameters?.["word"]!;
+        const revision = parseInt(
+          event?.headers?.["x-nordle-revision"] || "1",
+          10
+        );
+        if (maybeWord) {
+          const checkWordResp = checkWordHandler({ maybeWord, revision });
+          return ok(checkWordResp);
+        }
     }
-    return { statusCode: 400, headers: defaultHeaders };
+    return notFound();
   } catch (e) {
-    const { message } = e as Error;
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        error: message,
-      }),
-    };
+    return errorResponse(e as Error);
   }
 };

@@ -1,70 +1,78 @@
-import type { Config } from "../config";
-import WORD_LIST from "./word-list.json";
-import EXTRA_WORDS from "./additional-words.json";
-import { normalizeInput } from "../utils";
-const FULL_WORD_LIST = [...WORD_LIST, ...EXTRA_WORDS].map(normalizeInput);
+import type {
+  CheckWordConfig,
+  CheckWordInput,
+  CheckWordResponse,
+} from "./types";
 
-export type CheckResp = {
-  letterState: number[];
-};
-interface CheckHandlerArgs {
-  maybeWord: string;
-}
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message); // (1)
-    this.name = "ValidationError";
-  }
-}
+import type { EnvironmentLike } from ".././types";
+import { prepareConfig, normalizeInput } from "../utils";
+import {
+  ConfigurationError,
+  ValidationError,
+  ExpiredGameError,
+} from "./errors";
+import { FULL_WORD_LIST } from "../data";
 
-type CheckConfig = Pick<Config, "BANNED_WORD" | "CORRECT_WORD" | "ROW_LENGTH">;
-
-const configIsValid = (config: CheckConfig) => {
-  const { BANNED_WORD, CORRECT_WORD, ROW_LENGTH } = config;
+const configIsValid = (config: CheckWordConfig) => {
+  const { bannedWord, correctWord, rowLength } = config;
   return (
     // Words dont match configured length
-    [CORRECT_WORD, BANNED_WORD].every((_) => _?.length === ROW_LENGTH) &&
+    [correctWord, bannedWord].every((_) => _?.length === rowLength) &&
     // Impossible to win
-    CORRECT_WORD !== BANNED_WORD
+    correctWord !== bannedWord
   );
 };
 
-export function createCheckHandler(config: CheckConfig) {
-  if (!configIsValid(config)) {
-    throw new Error("INVALID_CONFIG");
+export function createCheckHandler(config: EnvironmentLike) {
+  const preparedConfig = prepareConfig(
+    config instanceof Function ? config() : config
+  );
+  if (!configIsValid(preparedConfig)) {
+    throw new ConfigurationError();
   }
-  const BANNED_WORD = normalizeInput(config.BANNED_WORD);
-  const CORRECT_WORD = normalizeInput(config.CORRECT_WORD);
+  const {
+    correctWord,
+    bannedWord,
+    rowLength,
+    revision: currentRevision,
+  } = preparedConfig;
 
   function wordIsValid(word: string) {
-    const normalized = normalizeInput(word);
-    if (normalized === BANNED_WORD) {
+    if (word === bannedWord || word.length !== rowLength) {
       return false;
     }
     // We add the CORRECT_WORD such that the WORD_LIST
     // musn't contain the CORRECT_WORD, for funsies.
-    return [...FULL_WORD_LIST, CORRECT_WORD].includes(word);
+    return FULL_WORD_LIST.includes(word) || correctWord === word;
   }
-  return function handleCheckWord({ maybeWord }: CheckHandlerArgs): CheckResp {
+
+  return function handleCheckWord({
+    revision,
+    maybeWord,
+  }: CheckWordInput): CheckWordResponse {
+    if (currentRevision !== revision) {
+      throw new ExpiredGameError();
+    }
+
     const inputWord = normalizeInput(maybeWord);
     if (!wordIsValid(inputWord)) {
       throw new ValidationError("INVALID_WORD");
     }
-    const letters = inputWord.slice(0, config.ROW_LENGTH).split("");
-    const letterState = letters.map((l, i) => {
-      const index = CORRECT_WORD.indexOf(l);
-      const exists = index >= 0;
-      const correctLocation = exists ? CORRECT_WORD[i] === l : false;
-      if (exists && correctLocation) {
-        return 2;
-      } else if (exists) {
-        return 1;
-      }
-      return 0;
-    });
-
     return {
-      letterState,
+      letterState: getLetterState(correctWord, inputWord),
     };
   };
+}
+
+function getLetterState(word: string, guess: string) {
+  return guess.split("").map((letter, letterIndex) => {
+    const exists = word.indexOf(letter) >= 0;
+    const correctLocation = word[letterIndex] === letter;
+    if (correctLocation) {
+      return 2;
+    } else if (exists) {
+      return 1;
+    }
+    return 0;
+  });
 }
