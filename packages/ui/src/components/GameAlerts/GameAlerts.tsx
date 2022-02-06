@@ -7,11 +7,19 @@ export const GameAlerts = () => {
   const {
     state: { error },
   } = useContext(Context);
-  if (error) {
+  if (error && error.message === "EXPIRED") {
     return (
       <Dialog aria-label="oh-shoot" isOpen>
-        <h1>Encountered an Error! 😭</h1>
-        <p>ERROR_CODE: {error.message}</p>
+        <h1>😭 You took too long!</h1>
+        <p>The word has changed since you last played.</p>
+      </Dialog>
+    );
+  }
+  if (error) {
+    return (
+      <Dialog aria-label="nick-broke-something" isOpen>
+        <h1>🤷‍♀️ Refresh the page?</h1>
+        <p>Nick probably broke something.</p>
       </Dialog>
     );
   }
