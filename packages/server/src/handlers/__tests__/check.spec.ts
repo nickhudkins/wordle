@@ -104,3 +104,16 @@ test("handleCheckWord: Valid, Unused Letter", () => {
     letterState: [0, 2, 2, 2, 2],
   });
 });
+
+test("handleCheckWord: Valid, Unused Letter", () => {
+  const handleCheckWord = createCheckHandler({
+    BANNED_WORD: "WRONG",
+    CORRECT_WORD: "FRESH",
+    ROW_LENGTH: "5",
+    REVISION: "1",
+  });
+  const output = handleCheckWord({ maybeWord: "FREED", revision: 1 });
+  expect(output).toEqual({
+    letterState: [2, 2, 2, 0, 0],
+  });
+});

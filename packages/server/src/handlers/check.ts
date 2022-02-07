@@ -65,14 +65,17 @@ export function createCheckHandler(config: EnvironmentLike) {
 }
 
 function getLetterState(word: string, guess: string) {
-  return guess.split("").map((letter, letterIndex) => {
-    const exists = word.indexOf(letter) >= 0;
-    const correctLocation = word[letterIndex] === letter;
-    if (correctLocation) {
-      return 2;
-    } else if (exists) {
-      return 1;
+  const letterState = word.split("");
+  const guessLetters = guess.split("");
+  letterState.forEach((correctLetter, i) => {
+    if (correctLetter === guessLetters[i]) {
+      letterState[i] = "2";
+      return;
+    } else if (letterState.indexOf(guessLetters[i]) >= 0) {
+      letterState[i] = "1";
+      return;
     }
-    return 0;
+    letterState[i] = "0";
   });
+  return letterState.map((l) => parseInt(l, 10) as LetterState);
 }
