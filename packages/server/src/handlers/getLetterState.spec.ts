@@ -1,5 +1,5 @@
-import { ValidationError } from "../errors";
-import { createCheckHandler, getLetterState } from "../check";
+import { ValidationError } from "./errors";
+import { createCheckHandler, getLetterState } from "./check";
 
 test("handleCheckWord: Invalid Input (Not a Word)", () => {
   const handleCheckWord = createCheckHandler({

@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { FC } from "react";
 import { createUseStyles } from "react-jss";
+import { classnames } from "../../utils";
 
 const useStyles = createUseStyles({
   container: {
@@ -9,21 +9,16 @@ const useStyles = createUseStyles({
   },
   shake: {
     animation: "shake 0.5s cubic-bezier(.36,.07,.19,.97) both",
-    transform: "translate3d(0, 0, 0)",
-    backfaceVisibility: "hidden",
-    perspective: 1000,
   },
 });
-
 interface RowProps {
   failed?: boolean;
 }
-
-export const Row: FC<RowProps> = ({ children, failed }) => {
-  const cx = useStyles();
-  const classes = [cx.container];
-  if (failed) {
-    classes.push(cx.shake);
-  }
-  return <div className={classes.join(" ")}>{children}</div>;
+export const Row: React.FC<RowProps> = ({ children, failed }) => {
+  const cx = classnames(useStyles());
+  const className = cx({
+    container: true,
+    shake: failed,
+  });
+  return <div className={className}>{children}</div>;
 };

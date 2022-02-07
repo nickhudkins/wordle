@@ -23,7 +23,7 @@ interface LetterProps {
   letterState?: number;
 }
 
-const useStyles = createUseStyles({
+const styles = {
   container: {
     userSelect: "none",
     display: "flex",
@@ -78,7 +78,12 @@ const useStyles = createUseStyles({
     backfaceVisibility: "hidden",
     perspective: 1000,
   }),
-});
+};
+
+const useStyles = createUseStyles<
+  "container" | "show" | "used" | "found" | "correct" | "justEntered",
+  Pick<LetterProps, "index" | "row" | "hasInteracted" | "letterState">
+>(styles);
 
 function InternalLetter({
   value,

@@ -1,11 +1,11 @@
 import * as React from "react";
-import { useState, useLayoutEffect, useRef } from "react";
-
-import type { ConfirmedRow } from "../../../game/types";
+import { useState, useLayoutEffect } from "react";
 
 import { Letter } from "../../Letter";
 import { Row } from "../Row";
 import { useKeyboardInput } from "./use-keyboard-input";
+
+import type { ConfirmedRow } from "../../../game/types";
 
 interface CurrentRowProps {
   loading: boolean;
@@ -18,7 +18,6 @@ interface CurrentRowProps {
 }
 
 export function CurrentRow({
-  loading,
   initialRow,
   onConfirm,
   index,
@@ -26,19 +25,21 @@ export function CurrentRow({
   previousRow,
   onInteraction,
 }: CurrentRowProps) {
-  const { current: initialState } = useRef(initialRow);
-  const [letters, setLetters] = useState(initialState);
   const [failed, setFailed] = useState(false);
-  const _setLetters = (args) => {
-    onInteraction();
-    setLetters(args);
-  };
+  const [letters, setLetters] = useState(initialRow);
+
+  // If our previous row changes, we have successfully
+  // confirmed the word, and the change has flushed.
+  // We'll go ahead and useLayoutEffect to avoid a flash
+  const reset = () => setLetters([...initialRow]);
+  useLayoutEffect(reset, [previousRow]);
+
   useKeyboardInput({
-    setLetters: _setLetters,
+    setLetters: (args) => {
+      onInteraction();
+      setLetters(args);
+    },
     onEnter: () => {
-      // Let's bail early if we know
-      // we're waiting on the server
-      if (loading) return;
       // Clear Failure State
       setFailed(false);
       // If confirmation throws...
@@ -48,11 +49,7 @@ export function CurrentRow({
       });
     },
   });
-  // We clear once our confirmedRows
-  // update has made it to us
-  useLayoutEffect(() => {
-    setLetters(initialState);
-  }, [previousRow]);
+
   return (
     <Row failed={failed}>
       {letters.map((letter, i) => (

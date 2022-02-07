@@ -8,6 +8,8 @@ import type {
   GameOutcome,
   GameContext,
   ActionType,
+  WordleAPI,
+  LetterState,
 } from "./types";
 
 const INITIAL_STATE: ReducerState = {
@@ -35,13 +37,18 @@ const getGameOutcome = (
   return;
 };
 
-const emptyKeyboardUsage: Record<string, number> = {};
+const emptyKeyboardUsage: Record<string, LetterState> = {};
 
-const getKeyUsage = (confirmedRows: ConfirmedRow[]): Record<string, number> =>
+const getKeyUsage = (
+  confirmedRows: ConfirmedRow[]
+): Record<string, LetterState> =>
   confirmedRows.flat().reduce(
     (usage, { value: letter, letterState }) => ({
       ...usage,
-      [letter]: Math.max(usage[letter] || -Infinity, letterState),
+      [letter]: Math.max(
+        usage[letter] || -Infinity,
+        letterState
+      ) as LetterState,
     }),
     emptyKeyboardUsage
   );
@@ -49,26 +56,25 @@ const getKeyUsage = (confirmedRows: ConfirmedRow[]): Record<string, number> =>
 function reducer(state: ReducerState, action: ActionType) {
   const { type, payload } = action;
   switch (type) {
-    case "INTERACTION/OCCURRED": {
+    case "INTERACTION/OCCURRED":
       return state.hasInteracted
         ? state
         : {
             ...state,
             hasInteracted: true,
           };
-    }
+
     case "CONFIRM_ROW/START":
       return {
         ...state,
         loading: true,
       };
-    case "CONFIRM_ROW/REJECT": {
+    case "CONFIRM_ROW/REJECT":
       return {
         ...state,
         error: payload.reason,
         loading: false,
       };
-    }
     case "CONFIRM_ROW/COMPLETE":
       const confirmedRows: ConfirmedRow[] = [
         ...state.confirmedRows,
@@ -124,14 +130,26 @@ function reducer(state: ReducerState, action: ActionType) {
 const INITIAL_CONTEXT: GameContext = {
   state: INITIAL_STATE,
   dispatch: () => {},
-  fetch: fetch,
+  wordleAPI: (() => Promise.resolve()) as WordleAPI,
 };
 export const Context = createContext(INITIAL_CONTEXT);
 export const GameContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+
+  const wordleAPI: WordleAPI = (apiPath: RequestInfo, opts?: RequestInit) => {
+    return fetch(`${API_URL}${apiPath}`, {
+      ...opts,
+      headers: {
+        "x-nordle-revision": `${state.revision}`,
+      },
+    }).then(async (resp) => ({
+      ...(await resp.json()),
+      status: resp.status,
+    }));
+  };
+
   useEffect(() => {
-    fetch(`${API_URL}/meta`)
-      .then((resp) => resp.json())
+    wordleAPI(`/meta`)
       .then((payload) => {
         dispatch({
           type: "META/COMPLETE",
@@ -140,16 +158,9 @@ export const GameContextProvider = ({ children }) => {
       })
       .catch((e) => dispatch({ type: "META/REJECT", payload: { reason: e } }));
   }, []);
-  const _fetch = (info: RequestInfo, opts: RequestInit) =>
-    fetch(info, {
-      ...opts,
-      mode: "cors",
-      headers: {
-        "x-nordle-revision": `${state.revision}`,
-      },
-    });
+
   return (
-    <Context.Provider value={{ state, dispatch, fetch: _fetch }}>
+    <Context.Provider value={{ state, dispatch, wordleAPI }}>
       {children}
     </Context.Provider>
   );
