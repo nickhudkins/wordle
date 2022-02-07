@@ -14,8 +14,9 @@ type FOUND = 2;
 type EXISTS = 1;
 type NOT_FOUND = 0;
 
+export type LetterState = FOUND | EXISTS | NOT_FOUND;
 export type CheckWordResponse = {
-  letterState: (FOUND | EXISTS | NOT_FOUND)[];
+  letterState: LetterState[];
 };
 
 export type MetaConfig = Pick<Config, "rowLength" | "numRows" | "revision">;

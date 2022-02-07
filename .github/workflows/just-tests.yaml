@@ -1,0 +1,11 @@
+name: Test
+on: [pull_request]
+jobs:
+  TestServer:
+    name: Test Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Install & Test
+        run: npm install && npm run test -w @nickhudkins/wordle-server

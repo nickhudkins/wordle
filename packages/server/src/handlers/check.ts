@@ -2,6 +2,7 @@ import type {
   CheckWordConfig,
   CheckWordInput,
   CheckWordResponse,
+  LetterState,
 } from "./types";
 
 import type { EnvironmentLike } from ".././types";
@@ -64,15 +65,47 @@ export function createCheckHandler(config: EnvironmentLike) {
   };
 }
 
-function getLetterState(word: string, guess: string) {
-  return guess.split("").map((letter, letterIndex) => {
-    const exists = word.indexOf(letter) >= 0;
-    const correctLocation = word[letterIndex] === letter;
-    if (correctLocation) {
-      return 2;
-    } else if (exists) {
-      return 1;
-    }
-    return 0;
-  });
+const FOUND = 2;
+const EXISTS = 1;
+const NOT_FOUND = 0;
+
+const EXACT_MATCH_TOKEN = "☑";
+
+export function getLetterState(
+  correctWord: string,
+  guessWord: string
+): LetterState[] {
+  if (correctWord === guessWord) {
+    return new Array(correctWord.length).fill(FOUND);
+  }
+  const correctLetters = [...correctWord];
+  const guessLetters = [...guessWord];
+
+  return (
+    correctLetters
+      // Create a list with exact matches identified
+      .map((currentLetter, n) => {
+        if (currentLetter === guessLetters[n]) {
+          return EXACT_MATCH_TOKEN;
+        }
+        return currentLetter;
+      })
+      // Remaining list
+      .map((currentLetter, n, correctLettersRemaining) => {
+        // Exact matches can simply be replaced, as we
+        // already identified the last time this index
+        // position needs to be changed (as an EXACT MATCH)]
+        // does not ever become NOT an EXACT MATCH
+        if (currentLetter === EXACT_MATCH_TOKEN) {
+          return FOUND;
+        }
+
+        // The remaining choice is binary, 0 or 1
+        // allowing us to determine it's final resting spot.
+        if (correctLettersRemaining.includes(guessLetters[n])) {
+          return EXISTS;
+        }
+        return NOT_FOUND;
+      })
+  );
 }
