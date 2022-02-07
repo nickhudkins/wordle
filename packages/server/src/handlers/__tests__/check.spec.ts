@@ -88,7 +88,7 @@ test("handleCheckWord: Valid, Re-Arranged", () => {
   });
   const output = handleCheckWord({ maybeWord: "TIGHT", revision: 1 });
   expect(output).toEqual({
-    letterState: [1, 2, 2, 2, 2],
+    letterState: [0, 2, 2, 2, 2],
   });
 });
 

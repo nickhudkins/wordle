@@ -2,6 +2,7 @@ import type {
   CheckWordConfig,
   CheckWordInput,
   CheckWordResponse,
+  LetterState,
 } from "./types";
 
 import type { EnvironmentLike } from ".././types";
@@ -64,18 +65,43 @@ export function createCheckHandler(config: EnvironmentLike) {
   };
 }
 
-function getLetterState(word: string, guess: string) {
-  const letterState = word.split("");
-  const guessLetters = guess.split("");
-  letterState.forEach((correctLetter, i) => {
-    if (correctLetter === guessLetters[i]) {
-      letterState[i] = "2";
-      return;
-    } else if (letterState.indexOf(guessLetters[i]) >= 0) {
-      letterState[i] = "1";
-      return;
+const FOUND = 2;
+const EXISTS = 1;
+const NOT_FOUND = 0;
+const REPLACEMENT_TOKEN = "_";
+
+export function getLetterState(correctWord: string, guessWord: string) {
+  if (correctWord === guessWord) {
+    return new Array(correctWord.length).fill(FOUND);
+  }
+
+  const correctLetters = [...correctWord];
+  const guessLetters = [...guessWord];
+  const wordLength = guessLetters.length;
+
+  const letterState = new Array(wordLength).fill(NOT_FOUND);
+
+  for (let i = 0; i < wordLength; i++) {
+    const guessLetter = guessLetters[i];
+    const correctLetter = correctLetters[i];
+
+    if (guessLetter === correctLetter) {
+      letterState[i] = FOUND;
+      correctLetters[i] = REPLACEMENT_TOKEN;
     }
-    letterState[i] = "0";
-  });
-  return letterState.map((l) => parseInt(l, 10) as LetterState);
+  }
+
+  for (let i = 0; i < wordLength; i++) {
+    if (letterState[i] === FOUND) {
+      continue;
+    }
+    const guessLetter = guessLetters[i];
+    const maybeFoundIndex = correctLetters.indexOf(guessLetter);
+    if (maybeFoundIndex >= 0) {
+      letterState[i] = EXISTS;
+      correctLetters[i] = REPLACEMENT_TOKEN;
+    }
+  }
+
+  return letterState;
 }
