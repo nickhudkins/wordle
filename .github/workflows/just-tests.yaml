@@ -1,8 +1,5 @@
 name: Test
-on: 
-  push:
-    branches:
-      - "!main"
+on: [pull_request]
 jobs:
   TestServer:
     name: Test Server
