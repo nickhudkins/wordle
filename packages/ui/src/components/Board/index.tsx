@@ -5,62 +5,10 @@ import { useContext, useCallback } from "react";
 import { Context } from "../../game/context";
 import { ConfirmedRow, CurrentRow, EmptyRow } from "../rows";
 import { GameOutcome } from "./GameOutcome";
-import { nonEmpty } from "../../utils";
-import type {
-  ConfirmedRow as ConfirmedRowT,
-  GameOutcome as GameOutcomeT,
-  GameDispatch,
-} from "../../game/types";
+import { useCheckRow } from "../rows/CurrentRow/use-check-row";
+import type { ConfirmedRow as ConfirmedRowT } from "../../game/types";
 
 const empty: ConfirmedRowT = [];
-
-function createUseOnConfirm(
-  dispatch: GameDispatch,
-  fetch,
-  gameOutcome: GameOutcomeT
-) {
-  return async (row: string[]) => {
-    if (!!gameOutcome) return;
-    if (row.every(nonEmpty)) {
-      dispatch({
-        type: "CONFIRM_ROW/START",
-        payload: null,
-      });
-      const resp = await fetch(`${API_URL}/check/${row.join("")}`);
-      switch (resp.status) {
-        case 400:
-          // Clear Loading :\ This is turning into an absolute mess
-          dispatch({
-            type: "CONFIRM_ROW/REJECT",
-            payload: {
-              reason: undefined,
-            },
-          });
-          throw new Error("INVALID_WORD");
-        case 410:
-          const err = new Error("EXPIRED");
-          dispatch({
-            type: "CONFIRM_ROW/REJECT",
-            payload: {
-              reason: err,
-            },
-          });
-          throw err;
-        default:
-          break;
-      }
-      const { letterState } = await resp.json();
-      return dispatch({
-        type: "CONFIRM_ROW/COMPLETE",
-        payload: row.map((l, i) => ({
-          value: l,
-          letterState: letterState[i],
-        })),
-      });
-    }
-    throw new Error("INCOMPLETE_WORD");
-  };
-}
 
 function lastConfirmed(confirmedRows: ConfirmedRowT[]): ConfirmedRowT {
   const lastConfirmedRow = confirmedRows[confirmedRows.length - 1];
@@ -74,15 +22,12 @@ export function Board() {
       hasInteracted,
       confirmedRows,
       gameOutcome,
-      revision,
       placeholderRows,
       loading,
     },
-    fetch,
     dispatch,
   } = useContext(Context);
-  const _onConfirm = createUseOnConfirm(dispatch, fetch, gameOutcome);
-  const onConfirm = useCallback(_onConfirm, [dispatch, revision, gameOutcome]);
+  const checkRow = useCheckRow();
   const onInteraction = useCallback(
     () => dispatch({ type: "INTERACTION/OCCURRED", payload: null }),
     []
@@ -107,7 +52,7 @@ export function Board() {
           index={confirmedRows.length + 1}
           previousRow={lastConfirmed(confirmedRows)}
           initialRow={placeholderRows[0]}
-          onConfirm={onConfirm}
+          onConfirm={checkRow}
           onInteraction={onInteraction}
         />
       )}

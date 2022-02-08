@@ -1,5 +1,5 @@
-import { ValidationError } from "../errors";
-import { errorResponse } from "../../http";
+import { ValidationError } from "./handlers/errors";
+import { errorResponse } from "./http";
 
 test("errorResponse: ValidationError", () => {
   const out = errorResponse(new ValidationError("INVALID"));

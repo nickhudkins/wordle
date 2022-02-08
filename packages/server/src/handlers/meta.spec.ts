@@ -1,4 +1,4 @@
-import { createMetaHandler } from "../meta";
+import { createMetaHandler } from "./meta";
 
 test("metaHandler - JUST COUNTS", () => {
   const resp = createMetaHandler({

@@ -4,6 +4,8 @@
   "description": "What if there was a server for wordle",
   "scripts": {
     "build": "tsc",
+    "build:dev": "tsc --watch",
+    "dev": "node dist/apiGateway.js",
     "test:watch": "jest --coverage --watch",
     "test": "jest --coverage"
   },

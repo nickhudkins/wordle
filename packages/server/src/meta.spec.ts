@@ -1,6 +1,8 @@
-// Pre-fill process.env such that
-import { handler } from "../index";
+import { handler } from "./index";
 
+/**
+ * Running handler 2x
+ */
 test("handler: GET /meta", async () => {
   const metaResp = await handler({
     routeKey: "GET /meta",
