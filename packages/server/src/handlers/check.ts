@@ -68,7 +68,6 @@ export function createCheckHandler(config: EnvironmentLike) {
 const FOUND = 2;
 const EXISTS = 1;
 const NOT_FOUND = 0;
-const REPLACEMENT_TOKEN = "_";
 
 export function getLetterState(correctWord: string, guessWord: string) {
   if (correctWord === guessWord) {
@@ -87,21 +86,16 @@ export function getLetterState(correctWord: string, guessWord: string) {
 
     if (guessLetter === correctLetter) {
       letterState[i] = FOUND;
-      correctLetters[i] = REPLACEMENT_TOKEN;
+      correctLetters[i] = "?";
+      guessLetters[i] = "☑";
     }
   }
-
   for (let i = 0; i < wordLength; i++) {
-    if (letterState[i] === FOUND) {
-      continue;
-    }
     const guessLetter = guessLetters[i];
     const maybeFoundIndex = correctLetters.indexOf(guessLetter);
     if (maybeFoundIndex >= 0) {
       letterState[i] = EXISTS;
-      correctLetters[i] = REPLACEMENT_TOKEN;
     }
   }
-
   return letterState;
 }
