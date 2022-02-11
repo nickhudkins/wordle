@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import { createUseStyles } from "react-jss";
-import { Dialog } from "@reach/dialog";
+import { Dialog, DialogContent, DialogOverlay } from "@reach/dialog";
 import {
   CONFIRMED_BG,
   CONFIRMED_FG,
@@ -28,9 +28,10 @@ const useStyles = createUseStyles({
   },
 });
 
-export function GameOutcome({ gameOutcome, confirmedRows }) {
+export function GameOutcome({ gameOutcome, confirmedRows, delayMS = 500 }) {
   const cx = useStyles();
   const [shared, setShared] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const timeout = useRef(null);
   useEffect(() => {
     if (shared) {
@@ -65,20 +66,35 @@ export function GameOutcome({ gameOutcome, confirmedRows }) {
     navigator.clipboard.writeText(shareText);
     setShared(true);
   }
+  useEffect(() => {
+    if (!!gameOutcome) {
+      const timeout = setTimeout(() => setIsOpen(true), delayMS);
+      return () => clearTimeout(timeout);
+    }
+    return () => {};
+  }, [gameOutcome, delayMS]);
   switch (gameOutcome) {
     case "WINNER":
       return (
-        <Dialog aria-label="you-won" isOpen>
-          <h1>You Won</h1>
-          <p>You should be very proud of yourself.</p>
-          <button className={cx.button} onClick={handleClick}>
-            {shared ? "✅ Copied!" : "🎉 Share It!"}
-          </button>
-        </Dialog>
+        <DialogOverlay
+          isOpen={isOpen}
+          style={{ background: "rgba(0, 0, 0, 0.4)" }}
+        >
+          <DialogContent
+            aria-label="you-won"
+            style={{ boxShadow: "0px 10px 50px hsla(0, 0%, 0%, 0.33)" }}
+          >
+            <h1>You Won</h1>
+            <p>You should be very proud of yourself.</p>
+            <button className={cx.button} onClick={handleClick}>
+              {shared ? "✅ Copied!" : "🎉 Share It!"}
+            </button>
+          </DialogContent>
+        </DialogOverlay>
       );
     case "NOT_WINNER":
       return (
-        <Dialog aria-label="you-not-won" isOpen>
+        <Dialog aria-label="you-not-won" isOpen={isOpen}>
           <h1>You did not won.</h1>
           <p>You should try again. That was not great.</p>
         </Dialog>

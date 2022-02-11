@@ -28,10 +28,12 @@ export function CurrentRow({
   const [failed, setFailed] = useState(false);
   const [letters, setLetters] = useState(initialRow);
 
+  const reset = () => {
+    setLetters(initialRow);
+  };
   // If our previous row changes, we have successfully
   // confirmed the word, and the change has flushed.
   // We'll go ahead and useLayoutEffect to avoid a flash
-  const reset = () => setLetters([...initialRow]);
   useLayoutEffect(reset, [previousRow]);
 
   useKeyboardInput({
@@ -44,7 +46,8 @@ export function CurrentRow({
       setFailed(false);
       // If confirmation throws...
       //... set failed to shake the row!
-      onConfirm(letters).catch(() => {
+      onConfirm(letters).catch((e) => {
+        console.log(e);
         requestAnimationFrame(() => setFailed(true));
       });
     },

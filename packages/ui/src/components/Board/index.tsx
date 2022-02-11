@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import * as React from "react";
-import { useContext, useCallback } from "react";
+import { useContext, useCallback, useMemo } from "react";
 
 import { Context } from "../../game/context";
 import { ConfirmedRow, CurrentRow, EmptyRow } from "../rows";
@@ -24,9 +24,11 @@ export function Board() {
       gameOutcome,
       placeholderRows,
       loading,
+      rowLength,
     },
     dispatch,
   } = useContext(Context);
+  const emptyRow = useMemo(() => new Array(rowLength).fill(""), [rowLength]);
   const checkRow = useCheckRow();
   const onInteraction = useCallback(
     () => dispatch({ type: "INTERACTION/OCCURRED", payload: null }),
@@ -51,7 +53,7 @@ export function Board() {
           hasInteracted={hasInteracted}
           index={confirmedRows.length + 1}
           previousRow={lastConfirmed(confirmedRows)}
-          initialRow={placeholderRows[0]}
+          initialRow={emptyRow}
           onConfirm={checkRow}
           onInteraction={onInteraction}
         />
