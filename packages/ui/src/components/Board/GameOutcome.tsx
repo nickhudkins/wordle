@@ -9,6 +9,7 @@ import {
   CORRECT_FG,
 } from "../../theme";
 import "@reach/dialog/styles.css";
+import { useDelayedState } from "../../hooks/use-delayed-state";
 
 const useStyles = createUseStyles({
   button: {
@@ -65,10 +66,11 @@ export function GameOutcome({ gameOutcome, confirmedRows }) {
     navigator.clipboard.writeText(shareText);
     setShared(true);
   }
+  const isOpen = useDelayedState(true, false, 1000);
   switch (gameOutcome) {
     case "WINNER":
       return (
-        <Dialog aria-label="you-won" isOpen>
+        <Dialog aria-label="you-won" isOpen={isOpen}>
           <h1>You Won</h1>
           <p>You should be very proud of yourself.</p>
           <button className={cx.button} onClick={handleClick}>
@@ -78,7 +80,7 @@ export function GameOutcome({ gameOutcome, confirmedRows }) {
       );
     case "NOT_WINNER":
       return (
-        <Dialog aria-label="you-not-won" isOpen>
+        <Dialog aria-label="you-not-won" isOpen={isOpen}>
           <h1>You did not won.</h1>
           <p>You should try again. That was not great.</p>
         </Dialog>
