@@ -54,3 +54,8 @@ test("handleCheckWord: Valid, Unused Letter", () => {
   const letterState = getLetterState("CRANE", "TREAD");
   expect(letterState).toEqual([0, 2, 1, 1, 0]);
 });
+
+test("handleCheckWord: Valid, Multi-Guess, Multi-Just-Found", () => {
+  const letterState = getLetterState("SHEAR", "ERASE");
+  expect(letterState).toEqual([1, 1, 1, 1, 0]);
+});

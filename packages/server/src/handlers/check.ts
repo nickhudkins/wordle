@@ -70,6 +70,7 @@ const EXISTS = 1;
 const NOT_FOUND = 0;
 
 const EXACT_MATCH_TOKEN = "☑";
+const ALREADY_FOUND_TOKEN = "␣";
 
 export function getLetterState(
   correctWord: string,
@@ -78,34 +79,33 @@ export function getLetterState(
   if (correctWord === guessWord) {
     return new Array(correctWord.length).fill(FOUND);
   }
+
+  const letterState = new Array(correctWord.length).fill(NOT_FOUND);
+
   const correctLetters = [...correctWord];
   const guessLetters = [...guessWord];
 
-  return (
-    correctLetters
-      // Create a list with exact matches identified
-      .map((currentLetter, n) => {
-        if (currentLetter === guessLetters[n]) {
-          return EXACT_MATCH_TOKEN;
-        }
-        return currentLetter;
-      })
-      // Remaining list
-      .map((currentLetter, n, correctLettersRemaining) => {
-        // Exact matches can simply be replaced, as we
-        // already identified the last time this index
-        // position needs to be changed (as an EXACT MATCH)]
-        // does not ever become NOT an EXACT MATCH
-        if (currentLetter === EXACT_MATCH_TOKEN) {
-          return FOUND;
-        }
+  for (let i = 0; i < guessLetters.length; i++) {
+    const guessedLetter = guessLetters[i];
+    if (guessedLetter === correctLetters[i]) {
+      // Mark found in letterState
+      letterState[i] = FOUND;
 
-        // The remaining choice is binary, 0 or 1
-        // allowing us to determine it's final resting spot.
-        if (correctLettersRemaining.includes(guessLetters[n])) {
-          return EXISTS;
-        }
-        return NOT_FOUND;
-      })
-  );
+      // Replace in correctLetters to avoid
+      // finding the letter again
+      correctLetters[i] = EXACT_MATCH_TOKEN;
+    }
+  }
+
+  for (let i = 0; i < guessLetters.length; i++) {
+    const guessedLetter = guessLetters[i];
+    const existsIndex = correctLetters.indexOf(guessedLetter);
+    if (existsIndex >= 0) {
+      // Replace the found letter in correctLetters
+      // to avoid finding the letter again.
+      correctLetters[existsIndex] = ALREADY_FOUND_TOKEN;
+      letterState[i] = EXISTS;
+    }
+  }
+  return letterState;
 }
