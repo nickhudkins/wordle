@@ -1,5 +1,6 @@
 const headers = {
   "Content-Type": "application/json",
+  "Cache-Control": "no-cache",
 };
 
 export const ok = <T>(resp: T) => ({
