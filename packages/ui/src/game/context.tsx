@@ -140,6 +140,7 @@ export const GameContextProvider = ({ children }) => {
     return fetch(`${API_URL}${apiPath}`, {
       ...opts,
       headers: {
+        "cache-control": "no-cache",
         "x-nordle-revision": `${state.revision}`,
       },
     }).then(async (resp) => ({
