@@ -1,4 +1,3 @@
-import { ValidationError } from "./errors";
 import { createCheckHandler } from "./check";
 
 test("createCheckHandler: Empty Config", () => {

@@ -12,7 +12,7 @@ import {
   ValidationError,
   ExpiredGameError,
 } from "./errors";
-import { FULL_WORD_LIST } from "../data";
+import { FULL_WORD_LIST } from "@nickhudkins/word-list";
 
 const configIsValid = (config: CheckWordConfig) => {
   const { bannedWord, correctWord, rowLength } = config;
