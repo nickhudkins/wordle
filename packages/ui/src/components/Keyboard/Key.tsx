@@ -38,9 +38,12 @@ const useStyles = createUseStyles({
     color: CONFIRMED_BG,
     textTransform: "uppercase",
     flex: 1,
+    minWidth: 30,
     maxWidth: 40,
     margin: [0, 4],
-    height: 48,
+    minHeight: 35,
+    maxHeight: 48,
+    height: "2vh",
     transition: "all .2s",
     userSelect: "none",
     "& path": {
