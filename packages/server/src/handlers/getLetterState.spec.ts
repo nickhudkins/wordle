@@ -59,3 +59,13 @@ test("handleCheckWord: Valid, Multi-Guess, Multi-Just-Found", () => {
   const letterState = getLetterState("SHEAR", "ERASE");
   expect(letterState).toEqual([1, 1, 1, 1, 0]);
 });
+
+test("handleCheckWord: Valid, Multi-Guess, Multi-Exact", () => {
+  const letterState = getLetterState("TAFIA", "TIBIA");
+  expect(letterState).toEqual([2, 0, 0, 2, 2]);
+});
+
+test("handleCheckWord: Valid, Multi-Guess, Single-Just-Found, Multi-Exact", () => {
+  const letterState = getLetterState("TIBIA", "TAIIA");
+  expect(letterState).toEqual([2, 0, 1, 2, 2]);
+});

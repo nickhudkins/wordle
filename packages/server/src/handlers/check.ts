@@ -69,9 +69,6 @@ const FOUND = 2;
 const EXISTS = 1;
 const NOT_FOUND = 0;
 
-const EXACT_MATCH_TOKEN = "☑";
-const ALREADY_FOUND_TOKEN = "␣";
-
 export function getLetterState(
   correctWord: string,
   guessWord: string
@@ -85,27 +82,36 @@ export function getLetterState(
   const correctLetters = [...correctWord];
   const guessLetters = [...guessWord];
 
-  for (let i = 0; i < guessLetters.length; i++) {
-    const guessedLetter = guessLetters[i];
-    if (guessedLetter === correctLetters[i]) {
-      // Mark found in letterState
+  const ocurrences = correctLetters.reduce((acc, curr) => {
+    acc[curr] = (acc[curr] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Correct Letter Pass
+  for (const [i, guessedLetter] of guessLetters.entries()) {
+    const correctLetter = correctLetters[i];
+    if (guessedLetter === correctLetter) {
       letterState[i] = FOUND;
 
-      // Replace in correctLetters to avoid
-      // finding the letter again
-      correctLetters[i] = EXACT_MATCH_TOKEN;
+      // Decrement occurences.
+      ocurrences[guessedLetter] -= 1;
     }
   }
 
-  for (let i = 0; i < guessLetters.length; i++) {
-    const guessedLetter = guessLetters[i];
-    const existsIndex = correctLetters.indexOf(guessedLetter);
-    if (existsIndex >= 0) {
-      // Replace the found letter in correctLetters
-      // to avoid finding the letter again.
-      correctLetters[existsIndex] = ALREADY_FOUND_TOKEN;
+  for (const [i, guessedLetter] of guessLetters.entries()) {
+    // Don't ever replace a found letter.
+    if (letterState[i] === FOUND) {
+      continue;
+    }
+
+    const existsInWord = correctLetters.includes(guessedLetter);
+    const hasOcurrences = ocurrences[guessedLetter] > 0;
+
+    if (existsInWord && hasOcurrences) {
       letterState[i] = EXISTS;
+      ocurrences[guessedLetter] -= 1;
     }
   }
+
   return letterState;
 }
