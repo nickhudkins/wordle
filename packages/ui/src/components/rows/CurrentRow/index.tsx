@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useLayoutEffect } from "react";
+import { useState, useLayoutEffect, useEffect } from "react";
 
 import { Letter } from "../../Letter";
 import { Row } from "../Row";
@@ -27,6 +27,17 @@ export function CurrentRow({
 }: CurrentRowProps) {
   const [failed, setFailed] = useState(false);
   const [letters, setLetters] = useState(initialRow);
+  // In infinity mode the board grows past the screen. The current row
+  // sits right above the keyboard, so scrolling to the bottom keeps
+  // both the row you're typing in and the keyboard on screen.
+  useEffect(() => {
+    if (index > 1) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [index]);
 
   const reset = () => {
     setLetters(initialRow);

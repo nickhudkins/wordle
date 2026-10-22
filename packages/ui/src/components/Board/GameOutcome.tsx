@@ -28,7 +28,24 @@ const useStyles = createUseStyles({
   },
 });
 
-export function GameOutcome({ gameOutcome, confirmedRows, delayMS = 500 }) {
+function winMessage(attempts: number, numRows: number) {
+  const extra = attempts - numRows;
+  if (extra <= 0) return "You should be very proud of yourself.";
+  if (extra === 1) return "One bonus row. We'll allow it.";
+  if (extra <= 4)
+    return `That took ${extra} bonus rows. Proud is a strong word.`;
+  if (extra <= 14)
+    return `${attempts} guesses. Nobody needs to know about this.`;
+  return `${attempts} guesses. At this point the word guessed you.`;
+}
+
+export function GameOutcome({
+  gameOutcome,
+  confirmedRows,
+  numRows = 6,
+  infinityMode = false,
+  delayMS = 500,
+}) {
   const cx = useStyles();
   const [shared, setShared] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -60,9 +77,13 @@ export function GameOutcome({ gameOutcome, confirmedRows, delayMS = 500 }) {
           .join("")
       )
       .join("\n");
-    const shareText = `Wordle — by Nick (${new Date().toLocaleDateString()})\n🎉 I am proud of myself! ${
-      confirmedRows.length
-    }/6\n\n${rows}`;
+    const attempts = confirmedRows.length;
+    const usedBonusRows = attempts > numRows;
+    const score = infinityMode ? `${attempts}/∞` : `${attempts}/${numRows}`;
+    const brag = usedBonusRows
+      ? "♾️ I got there eventually!"
+      : "🎉 I am proud of myself!";
+    const shareText = `Wordle — by Nick (${new Date().toLocaleDateString()})\n${brag} ${score}\n\n${rows}`;
     navigator.clipboard.writeText(shareText);
     setShared(true);
   }
@@ -85,7 +106,7 @@ export function GameOutcome({ gameOutcome, confirmedRows, delayMS = 500 }) {
             style={{ boxShadow: "0px 10px 50px hsla(0, 0%, 0%, 0.33)" }}
           >
             <h1>You Won</h1>
-            <p>You should be very proud of yourself.</p>
+            <p>{winMessage(confirmedRows.length, numRows)}</p>
             <button className={cx.button} onClick={handleClick}>
               {shared ? "✅ Copied!" : "🎉 Share It!"}
             </button>
@@ -97,6 +118,9 @@ export function GameOutcome({ gameOutcome, confirmedRows, delayMS = 500 }) {
         <Dialog aria-label="you-not-won" isOpen={isOpen}>
           <h1>You did not won.</h1>
           <p>You should try again. That was not great.</p>
+          {!infinityMode && (
+            <p>(Psst: infinity mode exists. Just saying.)</p>
+          )}
         </Dialog>
       );
     default:
