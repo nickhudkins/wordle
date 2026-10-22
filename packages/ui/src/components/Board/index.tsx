@@ -25,6 +25,8 @@ export function Board() {
       placeholderRows,
       loading,
       rowLength,
+      numRows,
+      infinityMode,
     },
     dispatch,
   } = useContext(Context);
@@ -39,7 +41,12 @@ export function Board() {
   }
   return (
     <>
-      <GameOutcome gameOutcome={gameOutcome} confirmedRows={confirmedRows} />
+      <GameOutcome
+        gameOutcome={gameOutcome}
+        confirmedRows={confirmedRows}
+        numRows={numRows}
+        infinityMode={infinityMode}
+      />
       {confirmedRows.map((row, i) => (
         <ConfirmedRow
           hasInteracted={hasInteracted}

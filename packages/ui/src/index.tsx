@@ -8,6 +8,7 @@ import { GameAlerts } from "./components/GameAlerts";
 import { GameContextProvider } from "./game/context";
 import { useGlobalStyles } from "./global-styles";
 import { Title } from "./components/Title";
+import { InfinityToggle } from "./components/InfinityToggle";
 
 const useGameStyles = createUseStyles({
   outerContainer: {
@@ -40,6 +41,7 @@ function App() {
         <GameAlerts />
         <div className={cx.container}>
           <Title />
+          <InfinityToggle />
           <div className={cx.gameboard}>
             <Board />
           </div>

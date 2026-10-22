@@ -12,6 +12,24 @@ import type {
   LetterState,
 } from "./types";
 
+const INFINITY_MODE_KEY = "nordle:infinity-mode";
+
+const readInfinityMode = (): boolean => {
+  try {
+    return localStorage.getItem(INFINITY_MODE_KEY) === "true";
+  } catch {
+    return false;
+  }
+};
+
+const saveInfinityMode = (enabled: boolean) => {
+  try {
+    localStorage.setItem(INFINITY_MODE_KEY, String(enabled));
+  } catch {
+    // Private mode or blocked storage: the toggle still works for this visit.
+  }
+};
+
 const INITIAL_STATE: ReducerState = {
   appReady: false,
   confirmedRows: [],
@@ -20,15 +38,20 @@ const INITIAL_STATE: ReducerState = {
   loading: true,
   revision: 1,
   hasInteracted: false,
+  infinityMode: readInfinityMode(),
 };
 
 const getGameOutcome = (
-  confirmedRows: ReducerState["confirmedRows"]
+  confirmedRows: ReducerState["confirmedRows"],
+  numRows: number = 6,
+  infinityMode: boolean = false
 ): GameOutcome => {
   const isWinner = confirmedRows.some((row) =>
     row.every(({ letterState }) => letterState === 2)
   );
-  const noRemaningAttempts = confirmedRows.length === 6;
+  // In infinity mode you simply never run out of attempts.
+  const noRemaningAttempts =
+    !infinityMode && confirmedRows.length >= numRows;
   if (isWinner) {
     return "WINNER";
   } else if (noRemaningAttempts) {
@@ -80,7 +103,11 @@ function reducer(state: ReducerState, action: ActionType) {
         ...state.confirmedRows,
         action.payload,
       ];
-      const gameOutcome = getGameOutcome(confirmedRows);
+      const gameOutcome = getGameOutcome(
+        confirmedRows,
+        state.numRows,
+        state.infinityMode
+      );
 
       // Ensures that when "<CurrentRow />" disappears,
       // we accurately pad the board
@@ -101,6 +128,30 @@ function reducer(state: ReducerState, action: ActionType) {
         placeholderRows: newPlaceholderRows,
         gameOutcome: gameOutcome,
       };
+    case "INFINITY_MODE/TOGGLE": {
+      // Once the game is over, the mode is locked in.
+      if (state.gameOutcome) return state;
+      const infinityMode = !state.infinityMode;
+      // Turning it off after row 6 ends the game immediately. Consequences.
+      const gameOutcome = getGameOutcome(
+        state.confirmedRows,
+        state.numRows,
+        infinityMode
+      );
+      const attemptsRemaining =
+        (state.numRows ?? 0) -
+        state.confirmedRows.length +
+        (gameOutcome ? 0 : -1);
+      const placeholderRows = new Array(Math.max(attemptsRemaining, 0)).fill(
+        new Array(state.rowLength ?? 0).fill("")
+      );
+      return {
+        ...state,
+        infinityMode,
+        gameOutcome,
+        placeholderRows,
+      };
+    }
     case "META/COMPLETE":
       const { numRows, rowLength, revision } = payload;
       const placeholderRows = new Array(numRows - 1).fill(
@@ -148,6 +199,10 @@ export const GameContextProvider = ({ children }) => {
       status: resp.status,
     }));
   };
+
+  useEffect(() => {
+    saveInfinityMode(state.infinityMode);
+  }, [state.infinityMode]);
 
   useEffect(() => {
     wordleAPI(`/meta`)

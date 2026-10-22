@@ -20,7 +20,8 @@ export type ActionType = {
     | "CONFIRM_ROW/START"
     | "CONFIRM_ROW/REJECT"
     | "CONFIRM_ROW/COMPLETE"
-    | "INTERACTION/OCCURRED";
+    | "INTERACTION/OCCURRED"
+    | "INFINITY_MODE/TOGGLE";
   payload: any;
 };
 
@@ -31,6 +32,7 @@ export type ReducerState = {
   appReady: boolean;
   loading: boolean;
   hasInteracted: boolean;
+  infinityMode: boolean;
   error?: Error;
   gameOutcome?: GameOutcome;
 
