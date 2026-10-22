@@ -5,6 +5,7 @@ import { useContext, useCallback, useMemo } from "react";
 import { Context } from "../../game/context";
 import { ConfirmedRow, CurrentRow, EmptyRow } from "../rows";
 import { GameOutcome } from "./GameOutcome";
+import { Heckle } from "../Heckle";
 import { useCheckRow } from "../rows/CurrentRow/use-check-row";
 import type { ConfirmedRow as ConfirmedRowT } from "../../game/types";
 
@@ -36,6 +37,11 @@ export function Board() {
     () => dispatch({ type: "INTERACTION/OCCURRED", payload: null }),
     []
   );
+  // Which bonus row (1, 2, 3...) you're currently typing in, if any.
+  const bonusRow =
+    infinityMode && !gameOutcome && numRows
+      ? confirmedRows.length - numRows + 1
+      : 0;
   if (!appReady) {
     return null;
   }
@@ -54,6 +60,9 @@ export function Board() {
           row={row}
         />
       ))}
+      {bonusRow > 0 && (
+        <Heckle key={bonusRow} bonusRow={bonusRow} numRows={numRows} />
+      )}
       {!gameOutcome && (
         <CurrentRow
           loading={loading}
